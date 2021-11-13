@@ -2,11 +2,11 @@ import express from "express";
 import http from "http";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import ReactDOMServer from "react-dom/server.js";
 import * as icons from "./icons/all.js";
 
 const app = express();
 const server = http.Server(app);
-
 
 function injectLibMW (app) {
     const whitelist = ["http://localhost:7992", "https://armory-ui.herokuapp.com"]
@@ -23,10 +23,9 @@ function injectLibMW (app) {
 }
 
 function injectRouteMW (app) {
-    app.get("/icon/:source/:name", function (req, res) {
-        const source = req.params.source;
-        const name = req.params.name;
-        res.send(icons[source][name]());
+    app.get("/icon/:source/:name/:color?/:size?/:className?", function (req, res) {
+        const {source, name, ...props} = req.params;
+        res.send(ReactDOMServer.renderToString(icons[source][name](props)));
     })
     
     app.get("/image", function (req, res) {
