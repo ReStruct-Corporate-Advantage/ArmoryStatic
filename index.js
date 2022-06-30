@@ -25,6 +25,7 @@ function injectLibMW (app) {
 function injectRouteMW (app) {
     app.get("/icon/:source/:name/:color?/:size?/:className?", function (req, res) {
         const {source, name, ...props} = req.params;
+        res.set('Content-Type', 'image/svg+xml');
         res.send(ReactDOMServer.renderToString(icons[source][name](props)));
     })
     

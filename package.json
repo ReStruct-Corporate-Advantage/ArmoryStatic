@@ -5,7 +5,8 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
-        "start": "node ./index.js"
+        "start": "node ./index.js",
+        "dev": "nodemon ./index.js"
     },
     "author": "mohiit1502",
     "license": "ISC",
@@ -14,6 +15,8 @@
         "npm": "6.14.10"
     },
     "dependencies": {
+        "@fontsource/open-sans": "^4.5.2",
+        "@fontsource/roboto": "^4.5.1",
         "body-parser": "^1.19.0",
         "cookie-parser": "^1.4.5",
         "cors": "^2.8.5",
