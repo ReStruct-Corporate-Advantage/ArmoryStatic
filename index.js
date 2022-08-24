@@ -9,7 +9,7 @@ const app = express();
 const server = http.Server(app);
 
 function injectLibMW (app) {
-    const whitelist = ["http://localhost:7992", "https://armory-ui.herokuapp.com"]
+    const whitelist = ["http://localhost:7992", "https://armory-ui.herokuapp.com", "http://armory-ui.herokuapp.com". "https://restruct-corporate-advantage.github.io/"]
     const corsOptions = {
         origin: (origin, callback) => {
             (!origin || whitelist.indexOf(origin) !== -1) ? callback(null, true) :  callback(new Error("Not allowed by CORS"))
