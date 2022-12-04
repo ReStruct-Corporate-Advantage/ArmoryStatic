@@ -17,6 +17,12 @@
   ],
   "hosting": {
     "public": "functions/lib",
+    "rewrites": [
+      {
+        "source": "/api/static",
+        "function": "armoryStaticApp"
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",
