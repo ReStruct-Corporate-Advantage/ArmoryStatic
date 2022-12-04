@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors, {CorsOptions} from "cors";
 import ReactDOMServer from "react-dom/server.js";
+import { APP_ROOT } from "./constants.js";
 import * as icons from "./icons/all.js";
 
 dotenv.config();
@@ -35,12 +36,16 @@ function injectLibMW(app: Express) {
   app.use(express.urlencoded({extended: true}));
   app.use(cors(corsOptions));
   app.use(cookieParser());
+  app.use((req, res, next) => {
+    req.url = req.url.startsWith(APP_ROOT) ? req.url.substring(APP_ROOT.length) : req.url;
+    next();
+  });
 }
 
-function injectRouteMW(app: express.Express) {
-  console.log("Registering routes....")
+function injectRouteMW(app: Express) {
+  console.log("Registering Routes....");
   app.get("/", function(req: Request, res: Response) {
-    console.log("handler called")
+    console.log("handler called");
     res.send("Hello from Armory's Static Content Server");
   });
   app.get(
@@ -65,7 +70,7 @@ function injectRouteMW(app: express.Express) {
   app.get("/config/:org/:space/:name", function(req: Request, res: Response) {
     res.send("Returning config!");
   });
-  console.log("Routes registered successfully!")
+  console.log("Routes registered successfully!");
 }
 
 function injectMiddlewares(app: Express) {

@@ -19,7 +19,7 @@
     "public": "functions/lib",
     "rewrites": [
       {
-        "source": "/api/static",
+        "source": "/api/static/**",
         "function": "armoryStaticApp"
       }
     ],
