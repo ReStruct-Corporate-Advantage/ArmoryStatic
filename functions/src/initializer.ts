@@ -38,6 +38,7 @@ function injectLibMW(app: Express) {
   app.use(cookieParser());
   app.use((req, res, next) => {
     req.url = req.url.startsWith(APP_ROOT) ? req.url.substring(APP_ROOT.length) : req.url;
+    req.url = !req.url ? "/" : req.url;
     next();
   });
 }
