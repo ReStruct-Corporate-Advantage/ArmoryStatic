@@ -27,6 +27,7 @@ module.exports = {
   rules: {
     "@typescript-eslint/ban-types": 0,
     "@typescript-eslint/ban-ts-comment": 0,
+    "@typescript-eslint/no-explicit-any": 0,
     "camelcase": "off",
     "eol-last": "off",
     "import/namespace": "off",
@@ -38,6 +39,7 @@ module.exports = {
     "no-var": "off",
     "no-invalid-this": "off",
     "object-curly-spacing": "off",
+    "one-var": 0,
     "quotes": ["error", "double"],
     "require-jsdoc": "off",
     "space-before-function-paren": "off",
