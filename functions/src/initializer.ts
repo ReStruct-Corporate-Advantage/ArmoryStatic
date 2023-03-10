@@ -17,6 +17,7 @@ const app: Express = express();
 function injectLibMW(app: Express) {
   const whitelist = [
     "http://localhost:7992",
+    "http://localhost:3000",
     "https://armory-server.web.app",
     "http://armory-server.web.app",
     "https://armory-server.firebaseapp.com",
