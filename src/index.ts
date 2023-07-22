@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from "cors";
 import ReactDOMServer from "react-dom/server.js";
+import "@armco/node-starter-kit";
 import Helper from "./helper";
 import { extractRootDomain } from "./helpers";
 import { download } from "./storage/controller";
@@ -26,13 +27,32 @@ function injectLibMW(app: Express) {
   ];
   const supportedDomains = ["notabuck.com", "armco.tech"];
   const corsOptions: CorsOptions = {
-    origin: (originUrl, callback) => {
-      console.log("Request Originated from -- ", originUrl, "...... Whitelisted origins -- ", whitelist.join(","));
-      const domain = extractRootDomain(origin);
-      const supportedEndpoint = supportedDomains.indexOf(domain) > -1;
+    origin: (
+      originUrl: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      logger.info(
+        "[InjectLibMiddleware::init::corsorigin] Received a call from: " +
+        originUrl,
+      );
+      const domain = originUrl && extractRootDomain(originUrl);
+      const supportedEndpoint = domain ?
+        supportedDomains.indexOf(domain) > -1 :
+        true;
+      logger.info(
+        "[InjectLibMiddleware::init::corsorigin] Origin Check: " +
+        (!originUrl || whitelist.indexOf(originUrl) !== -1 || supportedEndpoint),
+      );
+      logger.info(
+        "[InjectLibMiddleware::init::corsorigin] Checking against: " +
+        whitelist.join("\n"),
+      );
       !originUrl || whitelist.indexOf(originUrl) !== -1 || supportedEndpoint ?
         callback(null, true) :
-        callback(new Error("Not allowed by CORS"), undefined);
+        callback(new Error("Not allowed by CORS"));
+      logger.info(
+        "[InjectLibMiddleware::init::corsorigin] CORS intercepter ended",
+      );
     },
     credentials: true,
   };
@@ -45,7 +65,7 @@ function injectLibMW(app: Express) {
     req.url = !req.url ? "/" : req.url;
     next();
   });
-  app.use('/scripts', express.static(__dirname + '/node_modules/bootstrap/dist/'));
+  app.use("/scripts", express.static(__dirname + "/node_modules/bootstrap/dist/"));
 }
 
 function injectRouteMW(app: Express) {
