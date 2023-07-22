@@ -1,3 +1,6 @@
+# Compiled JavaScript files
+lib/**/*.js
+lib/**/*.js.map
 # Logs
 logs
 *.log
@@ -105,3 +108,11 @@ dist
 package-lock.json
 all
 .DS_Store
+
+# TypeScript v1 declaration files
+typings/
+
+# Node.js dependency directory
+node_modules/
+src/fonts/all/**/*
+*.pem

@@ -1,33 +1,56 @@
 {
-    "name": "armory_static",
-    "version": "1.0.0",
-    "description": "Server for static content across Restruct",
-    "main": "index.js",
-    "type": "module",
-    "scripts": {
-        "start": "node ./index.js",
-        "dev": "nodemon ./index.js"
-    },
-    "author": "mohiit1502",
-    "license": "ISC",
-    "engines": {
-        "node": "14.15.4",
-        "npm": "6.14.10"
-    },
-    "dependencies": {
-        "@fontsource/open-sans": "^4.5.2",
-        "@fontsource/roboto": "^4.5.1",
-        "body-parser": "^1.19.0",
-        "cookie-parser": "^1.4.5",
-        "cors": "^2.8.5",
-        "dotenv": "^8.2.0",
-        "express": "^4.17.1",
-        "multer": "^1.4.5-lts.1",
-        "react": "^17.0.2",
-        "react-dom": "^17.0.2",
-        "react-icons": "^4.7.1"
-    },
-    "devDependencies": {
-        "nodemon": "^2.0.15"
-    }
+  "name": "functions",
+  "version": "1.0.0",
+  "description": "Server for static content across Restruct",
+  "author": "mohiit1502",
+  "license": "ISC",
+  "scripts": {
+    "lint": "eslint --ext .ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "APP_PORT=5003 NODE_ENV=development nodemon ./src/initializer.ts -e js,ts,json",
+    "start": "node ./lib/index.js",
+    "font-summary": "node src/fonts/generate-api-response.js",
+    "font-description": "node src/fonts/generateFontDescriptor.js",
+    "font-gen-summary": "npm run font-summary && src/fonts/goofoffline",
+    "font-gen": "src/fonts/goofoffline"
+  },
+  "engines": {
+    "node": "16",
+    "npm": "8"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@fontsource/open-sans": "^4.5.2",
+    "@fontsource/roboto": "^4.5.1",
+    "body-parser": "^1.19.0",
+    "bootstrap": "^5.2.3",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.17.1",
+    "firebase": "^9.16.0",
+    "firebase-admin": "^10.0.2",
+    "firebase-functions": "^4.1.0",
+    "multer": "^1.4.5-lts.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-icons": "^4.3.1"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.3",
+    "@types/express": "^4.17.14",
+    "@types/node": "^18.11.10",
+    "@types/react-dom": "^18.0.9",
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^0.2.0",
+    "nodemon": "^2.0.20",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.5.4"
+  },
+  "private": true
 }
