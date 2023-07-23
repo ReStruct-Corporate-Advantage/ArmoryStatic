@@ -1,0 +1,33 @@
+{
+  "APP_NAME": "ARMCOSTATIC",
+  "APP_CONFIG": {
+    "default_stuff": [],
+    "username": "username",
+    "password": "password",
+    "app": {
+      "port": 5000
+    }
+  },
+  "DB_CONFIG": {
+    "production": {
+      "host": "mohiit1502:astalavista2402@armory.ergdp.mongodb.net",
+      "port": 27017,
+      "database": "<database>",
+      "options": "retryWrites=true&w=majority",
+      "connection_string": "mongodb+srv://mohiit1502:astalavista2402@armory.ergdp.mongodb.net/<database>?retryWrites=true&w=majority",
+      "protocol": "mongodb+srv"
+    },
+    "development": {
+      "host": "localhost:27017",
+      "port": 27017,
+      "database": "<database>",
+      "options": "retryWrites=true&w=majority",
+      "connection_string": "mongodb://localhost:27017/<database>?retryWrites=true&w=majority",
+      "protocol": "mongodb"
+    }
+  },
+  "KEYS": {
+    "armoryprivatekey": "y&zG5m(!dH6p)0*b3L"
+  },
+  "loadModules": ["log", "db"]
+}

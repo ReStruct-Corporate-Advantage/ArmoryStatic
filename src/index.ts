@@ -1,13 +1,14 @@
 import express, { Express, Request, Response } from "express";
+import http from "http";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors, { CorsOptions } from "cors";
 import ReactDOMServer from "react-dom/server.js";
-import "@armco/node-starter-kit";
+import rootInit from "@armco/node-starter-kit";
 import Helper from "./helper";
 import { extractRootDomain } from "./helpers";
 import { download } from "./storage/controller";
-import { APP_ROOT } from "./constants.js";
+import { APP_ROOT } from "./constants";
 import FONTS_CONFIG from "./fonts/google-fonts";
 import * as icons from "./icons/all.js";
 
@@ -155,6 +156,7 @@ function injectRouteMW(app: Express) {
 }
 
 function injectMiddlewares(app: Express) {
+  rootInit(new http.Server(app));
   injectLibMW(app);
   injectRouteMW(app);
 }
