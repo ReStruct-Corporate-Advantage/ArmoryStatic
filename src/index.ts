@@ -70,7 +70,7 @@ function injectLibMW(app: Express) {
 }
 
 function injectRouteMW(app: Express) {
-  console.log("Registering Routes....");
+  logger.info("Registering Routes....");
   app.get("/", function (req: Request, res: Response) {
     console.log("handler called");
     res.send("Hello from Armory's Static Content Server");
@@ -152,7 +152,7 @@ function injectRouteMW(app: Express) {
       res.end(processed);
     });
   });
-  console.log("Routes registered successfully!");
+  logger.info("Routes registered successfully!");
 }
 
 function injectMiddlewares(app: Express) {
@@ -165,5 +165,5 @@ injectMiddlewares(app);
 
 const listenPort = process.env.APP_PORT || 8080;
 app.listen(listenPort, () => {
-  console.log(`App running on the port ${listenPort}`);
+  logger.info(`App running on the port ${listenPort}`);
 });
