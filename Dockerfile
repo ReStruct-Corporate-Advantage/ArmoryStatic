@@ -5,12 +5,11 @@ FROM node:alpine
 WORKDIR /usr/src/app
 
 # copy the package.json files from local machine to the workdir in container
-COPY . .
+COPY *.json .
 
 # run npm install in our local machine
 RUN npm install
-# RUN npm run build
-# RUN npm install -g serve
+RUN npm run build
 
 # copy the generated modules and all other files to the container
 COPY . .
@@ -23,5 +22,4 @@ COPY privkey1.pem /etc/ssl/certificates/privkey.pem
 EXPOSE 5000
 
 # the command that starts our app
-# CMD ["serve", "-s", "build"]
 CMD ["node", "./lib/index.js"]
