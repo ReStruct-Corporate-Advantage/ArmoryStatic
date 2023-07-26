@@ -1,8 +1,8 @@
 {
-  "name": "functions",
+  "name": "armco_static",
   "version": "1.0.0",
-  "description": "Server for static content across Restruct",
-  "author": "mohiit1502",
+  "description": "Server for static content across Armco",
+  "author": "mohit.nagar@armco.tech",
   "license": "ISC",
   "scripts": {
     "lint": "eslint --ext .ts .",

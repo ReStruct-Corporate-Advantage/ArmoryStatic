@@ -12,6 +12,12 @@ import { APP_ROOT } from "./constants";
 import FONTS_CONFIG from "./fonts/google-fonts";
 import * as icons from "./icons/all.js";
 
+interface IconResponse {
+  name: string
+  group: string
+  svg: string
+}
+
 dotenv.config();
 
 const app: Express = express();
@@ -75,12 +81,35 @@ function injectRouteMW(app: Express) {
     console.log("handler called");
     res.send("Hello from Armory's Static Content Server");
   });
+  app.get(["/icon", "icons"], function (req: Request, res: Response) {
+    res.send(
+      "Use URL in the format /icon/<category>/<icon>/<optional_color>/<optional_size>/<optional_class>"
+    );
+  });
+  app.get("/icons/:color?/:size?/:className?", function (req: Request, res: Response) {
+    const iconsRenders = Object.keys(icons).reduce((acc: Array<IconResponse>, group: string) => {
+      const sourceObj = icons[group as keyof object];
+      return acc.concat(
+        Object.keys(sourceObj).map((name: string) => {
+          const CompFunc: Function = sourceObj[name];
+          return {
+            name,
+            group,
+            svg: ReactDOMServer.renderToString(
+              CompFunc && typeof CompFunc === "function" && CompFunc(req.params)
+            ),
+          } as IconResponse;
+        })
+      );
+    }, [] as Array<IconResponse>);
+    res.send(iconsRenders);
+  });
   app.get(
     "/icon/:source/:name/:color?/:size?/:className?",
     function (req: Request, res: Response) {
       const { source, name, ...props } = req.params;
-      const iconSpace = icons[source as keyof Object];
-      const iconFunc = iconSpace[name as keyof Object];
+      const iconSpace = icons[source as keyof object];
+      const iconFunc = iconSpace[name as keyof object];
       // @ts-ignore
       const renderableIcon = iconFunc(props);
       res.set("Content-Type", "image/svg+xml");
