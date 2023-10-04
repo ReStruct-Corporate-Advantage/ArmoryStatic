@@ -36,7 +36,7 @@ module.exports = {
     "max-len": "off",
     "new-cap": "off",
     "no-unused-vars": "off",
-    "no-var": "off",
+    "no-tabs": "off",
     "no-invalid-this": "off",
     "object-curly-spacing": "off",
     "one-var": 0,

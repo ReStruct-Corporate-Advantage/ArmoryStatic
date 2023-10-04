@@ -29,5 +29,56 @@
   "KEYS": {
     "armoryprivatekey": "y&zG5m(!dH6p)0*b3L"
   },
-  "loadModules": ["log", "db"]
+  "modules": ["log", "db"],
+  "middlewares": {
+    "helmet": {
+      "arOptions": {
+        "whitelist": [
+          "notabuck.com",
+          "armco.tech",
+          "http://localhost:3000",
+          "http://localhost:7992"
+        ]
+      },
+      "libOptions": {
+        "crossOriginResourcePolicy": false
+      }
+    },
+    "cors": {
+      "arOptions": {
+        "whitelist": [
+          "http://localhost:7992",
+          "http://localhost:3000",
+          "http://localhost:3001",
+          "http://localhost:5000"
+        ],
+        "supportedDomains": ["notabuck.com", "armco.tech"],
+        "credentails": true
+      }
+    },
+    "rateLimiter": {
+      "libOptions": {
+        "windowMs": 1000,
+        "max": 5000
+      }
+    },
+    "cookieParser": {
+      "arOptions": {
+        "options": {
+          "maxAge": 1296000000,
+          "secure": true
+        }
+      },
+      "libOptions": [
+        "%Th3$jKW#0d2H1m*"
+      ]
+    },
+    "acceptUrlEncoded": true,
+    "acceptJson": true,
+    "csrf": {
+      "arOptions": {
+        "urlPattern": "/secure"
+      }
+    }
+  }
 }

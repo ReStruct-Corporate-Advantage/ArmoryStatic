@@ -116,3 +116,5 @@ typings/
 node_modules/
 src/fonts/all/**/*
 *.pem
+
+src/icons/downloaded/*
