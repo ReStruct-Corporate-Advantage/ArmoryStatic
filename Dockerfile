@@ -24,4 +24,4 @@ ENV NODE_ENV production
 EXPOSE 5000
 
 # the command that starts our app
-CMD ["node", "./lib/index.js"]
+CMD ["npm", "start"]
