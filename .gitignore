@@ -118,3 +118,5 @@ src/fonts/all/**/*
 *.pem
 
 src/icons/downloaded/*
+
+armcorc.json
