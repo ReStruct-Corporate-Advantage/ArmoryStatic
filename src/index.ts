@@ -21,7 +21,7 @@ function injectRouteMW(app: Express) {
 rootInit(app);
 injectRouteMW(app);
 
-const listenPort = process.env.APP_PORT || 8080;
+const listenPort = ARMCOSTATIC.appConfig?.app?.port || process.env.APP_PORT || 8081;
 app.listen(listenPort, () => {
   logger.info(`App running on the port ${listenPort}`);
 });
