@@ -9,7 +9,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "dev": "APP_PORT=5003 NODE_ENV=development nodemon ./src/index.ts -e js,ts,json",
-    "start": "node ./lib/index.js",
+    "start": "NODE_ENV=production node ./lib/index.js",
     "font-summary": "node src/fonts/generate-api-response.js",
     "font-description": "node src/fonts/generateFontDescriptor.js",
     "font-gen-summary": "npm run font-summary && src/fonts/goofoffline",
