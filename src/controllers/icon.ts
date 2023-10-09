@@ -116,7 +116,6 @@ export function getIcon(req: Request, res: Response) {
 	try {
 		const renderableIconAsString = getRenderableSvgAsString(icons, source, name, props);
 		res.set("Content-Type", "image/svg+xml");
-		res.header("Cross-Origin-Resource-Policy", "same-site");
 		res.send(renderableIconAsString);
 	} catch (error) {
     // Handle errors here (e.g., file not found)
