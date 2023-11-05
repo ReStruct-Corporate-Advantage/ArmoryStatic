@@ -1,6 +1,7 @@
 import {Request, Response} from "express";
 import Helper from "../helper";
 import FONTS_CONFIG from "../fonts/google-fonts";
+import { download } from "../fonts";
 
 export function getFontConfigByName(req: Request, res: Response) {
 	const { name } = req.params;
@@ -21,7 +22,8 @@ export function getFont(req: Request, res: Response) {
 	/* eslint-ignore @typescript-eslint/no-explicit-any */
 	const fontConfig: any = FONTS_CONFIG[configName as keyof object];
 	const isLocalHost = req.hostname === "localhost" || req.hostname === "127.0.0.1";
-	const host = isLocalHost ? `http://localhost:${process.env.router_PORT}` : "https://armco.tech";
+	const listenPort = (global as any).ARMCOSTATIC.appConfig?.app?.port || process.env.APP_PORT || 8081;
+	const host = isLocalHost ? `http://localhost:${listenPort}/api` : "https://static.armco.tech";
 	params.host = host;
 	if (!fontConfig) {
 		res.send("Couldn't find descriptor for the requested font: " + name + ". Please check it's spelled properly");

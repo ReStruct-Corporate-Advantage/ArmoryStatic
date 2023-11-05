@@ -45,7 +45,8 @@ class Helper {
             unicodeRange = (config.unicodeRange as ObjectType)[subset as keyof object];
         }
         const encodedSpecs = Buffer.from(`${weight}:${style}`).toString("base64");
-        const url = `${host}/api/static/f/${name.replace(/ /g, "+")}/${encodedSpecs}.${format}`;
+        // const url = `${host}/font/f/${name.replace(/ /g, "+")}/${encodedSpecs}.${format}`;
+        const url = `${host}/font/local/${name.replace(/ /g, "+")}/${encodedSpecs}.${format}`;
         let fontBuilder = subset ? `/* ${subset} */\n` : "";
         fontBuilder += "@font-face {\n";
         fontBuilder += `\tfont-family: '${name.replace(/\+/g, " ")}';\n`;
