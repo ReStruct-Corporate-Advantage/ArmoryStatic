@@ -104,6 +104,19 @@ class Helper {
             return `${bytes} bytes`;
         }
     }
+
+    static splitStringAtUpperCase(input: string): string[] {
+        const result: string[] = [];
+        let start = 0;
+        for (let i = 1; i < input.length; i++) {
+            if (input[i].toUpperCase() === input[i]) {
+                result.push(input.substring(start, i));
+                start = i;
+            }
+        }
+        result.push(input.substring(start));
+        return result;
+    }
 }
 
 export default Helper;

@@ -1,8 +1,8 @@
-var fs = require('fs'),
-    path = require('path'),
-    stream = require('stream'),
-    url = require('url'),
-    http = require('http'),
+let fs = require("fs"),
+    path = require("path"),
+    stream = require("stream"),
+    url = require("url"),
+    http = require("http"),
 
     //                                            Group[0]
     //                                            vvvvvvvv
@@ -17,19 +17,19 @@ var fs = require('fs'),
     //                   vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
     fontFamilyPattern = /font-family\s*\:\s*[\'"]?([^\;]+?)[\'"]?\;/i,
     fontWeightPattern = /font-weight\s*\:\s*[\'"]?([^\;]+?)[\'"]?\;/i,
-    fontStylePattern =   /font-style\s*\:\s*[\'"]?([^\;]+?)[\'"]?\;/i,
+    fontStylePattern = /font-style\s*\:\s*[\'"]?([^\;]+?)[\'"]?\;/i,
 
-    scriptOutputDir = 'src/fonts/all',
-    cssFilename = 'fonts.css',
+    scriptOutputDir = "src/fonts/all",
+    cssFilename = "fonts.css",
 
-    fontFaceBulletproofStyle = fs.readFileSync(path.join(path.dirname(fs.realpathSync(__filename)), 'fontface.css.tpl')).toString();
+    fontFaceBulletproofStyle = fs.readFileSync(path.join(path.dirname(fs.realpathSync(__filename)), "fontface.css.tpl")).toString();
 
     fileExts = {
-        "embedded-opentype" : ".eot",
-        "woff" : ".woff",
-        "woff2" : ".woff2",
-        "truetype" : ".ttf",
-        "svg" : ".svg"
+        "embedded-opentype": ".eot",
+        "woff": ".woff",
+        "woff2": ".woff2",
+        "truetype": ".ttf",
+        "svg": ".svg",
     },
     userAgents = [
         // EOT lives in IE
@@ -54,12 +54,12 @@ var fs = require('fs'),
     fontfaceList = {},
     requestsInProgress = 0,
 
-    urlToProcess = '',
+    urlToProcess = "",
 
     httpOptions = {
-        'hostname' : '',
-        'path' : '',
-        'headers' : {}
+        "hostname": "",
+        "path": "",
+        "headers": {},
     };
 
 exports.setOutputDir = function(dirName) {
@@ -71,9 +71,8 @@ exports.setCssFilename = function(filename) {
 };
 
 exports.download = function(urlToProcess, agents) {
-
     if (!urlToProcess) {
-        console.log('No URL to process! Use something like this: http://fonts.googleapis.com/css?family=Open+Sans|Roboto');
+        console.log("No URL to process! Use something like this: http://fonts.googleapis.com/css?family=Open+Sans|Roboto");
         process.exit(0);
     }
 
@@ -86,21 +85,17 @@ exports.download = function(urlToProcess, agents) {
     processGoogleFontsUrl(agents.shift(), agents);
 
     (function awaitHttpRequests() {
-
         setTimeout(function() {
-
             requestsInProgress > 0 ? awaitHttpRequests() : buildOutputCssFile();
-
         }, 50);
-
     }());
 };
 
 function createOutputDir(dirName) {
-    var dirPath = path.join(process.cwd(), dirName);
+    const dirPath = path.join(process.cwd(), dirName);
 
     fs.exists(dirPath, function(exists) {
-        if(!exists) fs.mkdirSync(dirPath);
+        if (!exists) fs.mkdirSync(dirPath);
     });
 }
 
@@ -114,14 +109,14 @@ function processGoogleFontsUrl(userAgent, agents) {
     agents = agents || userAgents;
 
     httpCallback = function(response) {
-        var buffer = [];
+        const buffer = [];
 
-        response.on('data', function(chunk) {
+        response.on("data", function(chunk) {
             buffer.push(chunk);
         });
 
-        response.on('end', function() {
-            var css = Buffer.concat(buffer).toString();
+        response.on("end", function() {
+            const css = Buffer.concat(buffer).toString();
             // console.log(css)
             css.match(fontFaceRulePattern).forEach(processFontface);
 
@@ -131,23 +126,22 @@ function processGoogleFontsUrl(userAgent, agents) {
         });
     };
 
-    httpOptions.headers['User-Agent'] = userAgent;
+    httpOptions.headers["User-Agent"] = userAgent;
 
-    console.log("Getting fonts for.. " + httpOptions.hostname + httpOptions.path + " \n ... and agent " + httpOptions.headers["User-Agent"])
+    console.log("Getting fonts for.. " + httpOptions.hostname + httpOptions.path + " \n ... and agent " + httpOptions.headers["User-Agent"]);
     http.get(httpOptions, httpCallback)
-        .on('error', handleHttpError);
+        .on("error", handleHttpError);
 }
 
 function processFontface(css) {
-    var urlMatches,
+    let urlMatches,
         fontKey = composeFontFaceKey(css);
 
     while ((urlMatches = fontUrlPattern.exec(css)) !== null) {
-
         // eot have no "src(...) format(...)" form, only "src(...);"
-        var format = urlMatches[2] || "embedded-opentype";
-            fontUrlWithFormat = format + '|' + urlMatches[1],
-            filename = fontKey.replace(/\s/g, '+').replace(/:/g, '_'),
+        const format = urlMatches[2] || "embedded-opentype";
+            fontUrlWithFormat = format + "|" + urlMatches[1],
+            filename = fontKey.replace(/\s/g, "+").replace(/:/g, "_"),
             extension = fileExts[format];
 
         // There is no font in collection with such a fontKey
@@ -166,11 +160,11 @@ function processFontface(css) {
 }
 
 function composeFontFaceKey(css) {
-    var family = css.match(fontFamilyPattern)[1],
+    const family = css.match(fontFamilyPattern)[1],
         weight = css.match(fontWeightPattern)[1],
-        style =  css.match(fontStylePattern)[1];
+        style = css.match(fontStylePattern)[1];
 
-    return family + ':' + weight + ':' + style;
+    return family + ":" + weight + ":" + style;
 }
 
 function downloadFont(url, filename) {
@@ -179,22 +173,22 @@ function downloadFont(url, filename) {
     requestsInProgress += 1;
 
     http.get(url, function(response) {
-        var buffer = [];
+        const buffer = [];
 
-        response.on('data', function(chunk) {
+        response.on("data", function(chunk) {
             buffer.push(chunk);
         });
 
-        response.on('end', function() {
+        response.on("end", function() {
             fs.writeFileSync(path.join(scriptOutputDir, filename), Buffer.concat(buffer));
             requestsInProgress -= 1;
         });
     })
-    .on('error', handleHttpError);
+    .on("error", handleHttpError);
 }
 
 function buildOutputCssFile() {
-    var i,
+    let i,
         fontKey,
         splittedArray,
         fontFamily,
@@ -202,7 +196,7 @@ function buildOutputCssFile() {
         fontStyle,
         fontFormat,
         fontGoogleFontsUrl,
-        outputCss = '';
+        outputCss = "";
 
     // console.log('Composing CSS file...');
 
@@ -210,13 +204,13 @@ function buildOutputCssFile() {
     for (let i = 0; i < keys.length; i++) {
         const fontKey = keys[i];
         if (fontfaceList[fontKey].indexOf("updated") === -1) {
-            splittedArray = fontKey.split(':');
+            splittedArray = fontKey.split(":");
 
             fontFamily = splittedArray[0];
             fontWeight = splittedArray[1];
             fontStyle = splittedArray[2];
 
-            fontFilename = fontKey.replace(/\s/g, '+').replace(/:/g, '_');
+            fontFilename = fontKey.replace(/\s/g, "+").replace(/:/g, "_");
 
             outputCss = fontFaceBulletproofStyle
                             .replace(/\{\{fontFilename\}\}/g, fontFilename)
@@ -225,13 +219,13 @@ function buildOutputCssFile() {
                             .replace(/\{\{fontStyle\}\}/g, fontStyle);
 
             for (i = fontfaceList[fontKey].length - 1; i >= 0; i--) {
-                splittedArray = fontfaceList[fontKey][i].split('|');
+                splittedArray = fontfaceList[fontKey][i].split("|");
 
                 fontFormat = splittedArray[0];
                 fontGoogleFontsUrl = splittedArray[1];
 
                 outputCss = outputCss
-                                .replace(new RegExp('\\{\\{' + fontFormat + '-gf-url\\}\\}', 'g'), fontGoogleFontsUrl);
+                                .replace(new RegExp("\\{\\{" + fontFormat + "-gf-url\\}\\}", "g"), fontGoogleFontsUrl);
             }
 
             // Should be sync! Fontface declarations order matters!
@@ -247,13 +241,13 @@ function buildOutputCssFile() {
 }
 
 exports.generateIndex = function() {
-    fs.readdir(path.join(__dirname, 'all'), (error, files) => {
-        if (error) console.log(error)
+    fs.readdir(path.join(__dirname, "all"), (error, files) => {
+        if (error) console.log(error);
         const finalImports = [];
         let final = "";
         const finalExports = [];
         const scanExts = ["eot", "svg", "ttf", "woff", "woff2"];
-        files.forEach(file => {
+        files.forEach((file) => {
             const fileNameDescriptor = file.split(".");
             const ext = fileNameDescriptor[fileNameDescriptor.length - 1];
             const fileName = fileNameDescriptor[0].replaceAll("+", "_") + "_" + ext;
@@ -261,15 +255,15 @@ exports.generateIndex = function() {
                 finalImports.push(`import ${fileName} from "./${file}"`);
                 finalExports.push(fileName);
             }
-        })
+        });
         final = finalImports.join(";\n");
         final += ";\n\n";
         final += "export {\n\t" + finalExports.join(",\n\t") + "\n}\n";
         fs.writeFileSync(path.join(scriptOutputDir, "index.ts"), final);
-    })
-}
+    });
+};
 
 function handleHttpError(error) {
     requestsInProgress -= 1;
-    console.log('Request error: %s', error.message);
+    console.log("Request error: %s", error.message);
 }

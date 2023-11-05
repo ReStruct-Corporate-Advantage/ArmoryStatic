@@ -4,7 +4,7 @@ type TAG_STATES = "verified" | "underreview" | "deprecated"
 type SCOPES = "public" | "private" | "org"
 
 export interface ITag {
-	_id: ObjectId | string
+	_id?: ObjectId | string
 	name: string
 	state?: TAG_STATES
 	weightage?: number

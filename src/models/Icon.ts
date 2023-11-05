@@ -52,7 +52,11 @@ const iconMetaSchema = new mongoose.Schema({
     default: "",
   },
   tags: Array<ITag>,
-  meta: Array<IMeta>,
+  meta: {
+    size: String,
+    downloadTimes: Number,
+    favoriteTimes: Number,
+  },
   createdby: String,
   updtedby: String,
 });

@@ -3,13 +3,13 @@ import axios from "axios";
 import { Request, Response } from "express";
 import { Document } from "mongoose";
 import ReactDOMServer from "react-dom/server.js";
-import { getRenderableSvgAsString, trimObject } from "../helpers";
+import { getRenderableSvgAsString, toJson, trimObject } from "../helpers";
 import Helper from "../helper";
 import * as icons from "../icons/all";
 import { IIcon, IIconMeta, IMeta, IconResponse } from "../models/Icon";
 import { ITag } from "../models/Tag";
-import { getAllIconsMeta, saveIcon, saveIconMeta, saveIcons, saveIconsMeta, saveTag } from "../dao/icon";
-import { ObjectType } from "@armco/node-starter-kit/types/types";
+import { getAllIconsMeta, getIconsBy, getPageIconsMeta, saveIcon, saveIconMeta, saveIcons, saveIconsMeta, saveTag, saveTags } from "../dao/icon";
+import { ArrayType, ObjectType } from "@armco/node-starter-kit/types/types";
 
 // Set a custom timeout value (e.g., 5 seconds)
 const CUSTOM_TIMEOUT = 10000; // 7 seconds in milliseconds
@@ -175,13 +175,71 @@ export async function getAllIcons(req: Request, res: Response) {
 	res.send(iconsRenders);
 }
 
+export async function getIconsPage(req: Request, res: Response) {
+	try {
+		const {pageSize, from, search, ...filters} = req. query;
+		if (filters && filters.tags) {
+			filters["tags.name"] = {$in: (filters.tags as string).split(",").map((tag: string) => tag.trim())};
+			delete filters.tags;
+		}
+		if (search) {
+			(filters as any).name = {$regex: new RegExp(search as string, "i")};
+		}
+		const iconsMeta = await getPageIconsMeta(Number(from), Number(pageSize), filters);
+		const normalizedIconsMeta: { [key: string]: ObjectType } = {};
+		iconsMeta && iconsMeta.forEach((iconMeta: Document) => {
+			const jsonMeta = iconMeta.toJSON();
+			normalizedIconsMeta[jsonMeta.name] = trimObject(jsonMeta);
+		});
+		let icons: Array<any> = await getIconsBy({name: {$in: iconsMeta.map(toJson).map((iconMeta) => iconMeta.name)}});
+		icons = icons.map(toJson).map((icon) => icon.name && {...icon, ...normalizedIconsMeta[icon.name as string]});
+		res.status(200).json(icons);
+	} catch (e) {
+		logger.error("[IconController][getIconsPage] Failed to fetch icons");
+		res.status(500).json({message: "Unable to fetch icon's page at the moment, please try again later!"});
+	}
+}
+
+export async function getIconJuice(req: Request, res: Response) {
+	const regex = /^[1-9]\d*$/;
+	const iconsMeta = await getAllIconsMeta();
+	const normalizedIconsMeta: { [key: string]: ObjectType } = {};
+	iconsMeta && iconsMeta.forEach((iconMeta: Document) => {
+		const jsonMeta = iconMeta.toJSON();
+		if (jsonMeta.tags) {
+			const tags = jsonMeta.tags.filter((tag: ITag) => {
+				return tag.name !== "armco" &&
+					tag.name !== "icon" &&
+					tag.name.toLowerCase() !== jsonMeta.group &&
+					!regex.test(tag.name);
+			});
+			normalizedIconsMeta[jsonMeta.name] = {labels: tags.map((tag: ITag) => tag.name)};
+		}
+	});
+	const iconsRenders = Object.keys(icons).reduce((acc: Array<IconResponse>, group: string) => {
+		const sourceObj = icons[group as keyof object];
+		return acc.concat(
+			Object.keys(sourceObj).map((name: string) => {
+				const CompFunc: Function = sourceObj[name];
+				return {
+					svg: ReactDOMServer.renderToString(
+						CompFunc && typeof CompFunc === "function" && CompFunc(req.params)
+					),
+					...normalizedIconsMeta[name],
+				} as IconResponse;
+			})
+		);
+	}, [] as Array<IconResponse>);
+	res.send(iconsRenders);
+}
+
 export function incorrectUrlFormathandler(req: Request, res: Response) {
 	res.send(
 		"Use URL in the format /icon/{category}/{icon}/{optional_color>/{optional_size}/{optional_class}"
 	);
 }
 /**
- * Risky operation DO NOT USER without review,
+ * Risky operation DO NOT USE without review,
  * potential to override existing data, if any updates exist, they will be overriden with
  * icons from local copy
  *
@@ -191,6 +249,7 @@ export function incorrectUrlFormathandler(req: Request, res: Response) {
 export function populateToDb(req: Request, res: Response) {
 	const svgs: Array<IIcon> = [], metas: Array<IIconMeta> = [];
 	const promises: Array<Promise<unknown>> = [];
+	const consolidatedTagList: {[key: string]: number} = {};
 	try {
 		Object.keys(icons).forEach((group: string) => {
 			const sourceObj = icons[group as keyof object];
@@ -198,6 +257,14 @@ export function populateToDb(req: Request, res: Response) {
 				const CompFunc: Function = sourceObj[name];
 				const icon = ReactDOMServer.renderToString(CompFunc && typeof CompFunc === "function" && CompFunc(req.params));
 				const iconSize = Helper.formatSizeFromLength(icon);
+				const tags = Helper.splitStringAtUpperCase(name).map((tag) => ({name: tag, state: "verified"}));
+				tags.forEach((tag) => {
+					if (tag.name.toLowerCase() !== group && tag.name.length > 1) {
+						consolidatedTagList[tag.name] = (consolidatedTagList[tag.name] || 0) + 1;
+					}
+				});
+				tags.push({ name: "icon", state: "verified" });
+				tags.push({ name: "armco", state: "verified" });
 				svgs.push({
 					name,
 					icon,
@@ -206,23 +273,157 @@ export function populateToDb(req: Request, res: Response) {
 				metas.push({
 					name,
 					group,
-					tags: [{ name: group, state: "verified" }, { name: "icon", state: "verified" }, { name: "armco", state: "verified" }] as Array<ITag>,
+					tags: tags as Array<ITag>,
 					meta: { size: iconSize, downloadTimes: 0, favoriteTimes: 0 } as IMeta,
 					createdby: "Armco",
 				});
 			});
 		});
-		if (svgs.length > 0) {
-			promises.push(saveIcons(svgs));
-		}
-		if (metas.length > 0) {
-			promises.push(saveIconsMeta(metas));
-		}
-		Promise.all(promises)
-			.then((resolutions) => {
-				console.log(resolutions);
-				res.status(200).json({ success: true });
+		// if (svgs.length > 0) {
+		// 	promises.push(saveIcons(svgs));
+		// }
+		// if (metas.length > 0) {
+		// 	promises.push(saveIconsMeta(metas));
+		// }
+		const all: {[key: string]: number} = {};
+		const gt10: {[key: string]: number} = {};
+		const gt25: {[key: string]: number} = {};
+		const gt50: {[key: string]: number} = {};
+		const gt100: {[key: string]: number} = {};
+		const gt300: {[key: string]: number} = {};
+		Object.keys(consolidatedTagList).forEach((key) => {
+			if (consolidatedTagList[key] > 10 && consolidatedTagList[key] <= 25) {
+				gt10[key] = consolidatedTagList[key];
+			}
+			if (consolidatedTagList[key] > 25 && consolidatedTagList[key] <= 50) {
+				gt25[key] = consolidatedTagList[key];
+			}
+			if (consolidatedTagList[key] > 50 && consolidatedTagList[key] <= 100) {
+				gt50[key] = consolidatedTagList[key];
+			}
+			if (consolidatedTagList[key] > 100 && consolidatedTagList[key] <= 300) {
+				gt100[key] = consolidatedTagList[key];
+			}
+			if (consolidatedTagList[key] > 300) {
+				gt300[key] = consolidatedTagList[key];
+			}
+		});
+		res.status(200).json({
+			count: {
+				// gt300: Object.keys(gt300).length,
+				gt100: Object.keys(gt100).length,
+				gt50: Object.keys(gt50).length,
+				// gt25: Object.keys(gt25).length,
+				// gt10: Object.keys(gt10).length,
+				// all: Object.keys(consolidatedTagList).length,
+			},
+			// gt300,
+			gt100,
+			gt50,
+			// gt25,
+			// gt10,
+		});
+		// all: consolidatedTagList });
+		// Promise.all(promises)
+		// 	.then((resolutions) => {
+		// 		console.log(resolutions);
+		// 		res.status(200).json({ success: true });
+		// 	});
+	} catch (e) {
+		res.status(500).json({ success: false });
+	}
+}
+
+export function getAllTags(req: Request, res: Response) {
+	let {variants} = req.query;
+	variants = (variants as string)?.split(",") || [];
+	const svgs: Array<IIcon> = [], metas: Array<IIconMeta> = [];
+	const consolidatedTagList: {[key: string]: number} = {};
+	try {
+		Object.keys(icons).forEach((group: string) => {
+			const sourceObj = icons[group as keyof object];
+			Object.keys(sourceObj).forEach((name: string) => {
+				const CompFunc: Function = sourceObj[name];
+				const icon = ReactDOMServer.renderToString(CompFunc && typeof CompFunc === "function" && CompFunc(req.params));
+				const iconSize = Helper.formatSizeFromLength(icon);
+				const tags = Helper.splitStringAtUpperCase(name).map((tag) => ({name: tag, state: "verified"}));
+				tags.forEach((tag) => {
+					if (tag.name.toLowerCase() !== group && tag.name.length > 1) {
+						consolidatedTagList[tag.name] = (consolidatedTagList[tag.name] || 0) + 1;
+					}
+				});
+				tags.push({ name: "icon", state: "verified" });
+				tags.push({ name: "armco", state: "verified" });
+				svgs.push({
+					name,
+					icon,
+					createdby: "Armco",
+				});
+				metas.push({
+					name,
+					group,
+					tags: tags as Array<ITag>,
+					meta: { size: iconSize, downloadTimes: 0, favoriteTimes: 0 } as IMeta,
+					createdby: "Armco",
+				});
 			});
+		});
+		if (Array.isArray(variants) && variants.length > 0) {
+			const all: {[key: string]: number} = {};
+			const gt10: {[key: string]: number} = {};
+			const gt25: {[key: string]: number} = {};
+			const gt50: {[key: string]: number} = {};
+			const gt100: {[key: string]: number} = {};
+			const gt300: {[key: string]: number} = {};
+			Object.keys(consolidatedTagList).forEach((key) => {
+				if ((variants as ArrayType).indexOf("gt10") > -1 && consolidatedTagList[key] > 10 && consolidatedTagList[key] <= 25) {
+					gt10[key] = consolidatedTagList[key];
+				}
+				if ((variants as ArrayType).indexOf("gt25") > -1 && consolidatedTagList[key] > 25 && consolidatedTagList[key] <= 50) {
+					gt25[key] = consolidatedTagList[key];
+				}
+				if ((variants as ArrayType).indexOf("gt50") > -1 && consolidatedTagList[key] > 50 && consolidatedTagList[key] <= 100) {
+					gt50[key] = consolidatedTagList[key];
+				}
+				if ((variants as ArrayType).indexOf("gt100") > -1 && consolidatedTagList[key] > 100 && consolidatedTagList[key] <= 300) {
+					gt100[key] = consolidatedTagList[key];
+				}
+				if ((variants as ArrayType).indexOf("gt300") > -1 && consolidatedTagList[key] > 300) {
+					gt300[key] = consolidatedTagList[key];
+				}
+				if ((variants as ArrayType).indexOf("all") > -1) {
+					all[key] = consolidatedTagList[key];
+				}
+			});
+			const responseBody: ObjectType = {count: {}};
+			if ((variants as ArrayType).indexOf("gt10") > -1) {
+				responseBody.gt10 = gt10;
+				(responseBody.count as ObjectType).gt10 = Object.keys(gt10).length;
+			}
+			if ((variants as ArrayType).indexOf("gt25") > -1) {
+				responseBody.gt25 = gt25;
+				(responseBody.count as ObjectType).gt25 = Object.keys(gt25).length;
+			}
+			if ((variants as ArrayType).indexOf("gt50") > -1) {
+				responseBody.gt50 = gt50;
+				(responseBody.count as ObjectType).gt50 = Object.keys(gt50).length;
+			}
+			if ((variants as ArrayType).indexOf("gt100") > -1) {
+				responseBody.gt100 = gt100;
+				(responseBody.count as ObjectType).gt100 = Object.keys(gt100).length;
+			}
+			if ((variants as ArrayType).indexOf("gt300") > -1) {
+				responseBody.gt300 = gt300;
+				(responseBody.count as ObjectType).gt300 = Object.keys(gt300).length;
+			}
+			if ((variants as ArrayType).indexOf("all") > -1) {
+				responseBody.all = all;
+				(responseBody.count as ObjectType).all = Object.keys(all).length;
+			}
+			res.status(200).json(responseBody);
+		} else {
+			res.status(400).json({message: "Please provide one or more of gt10, gt25, gt50, gt100, gt300 in query params as ?variants=gt10,gt50"});
+		}
 	} catch (e) {
 		res.status(500).json({ success: false });
 	}
@@ -261,6 +462,21 @@ export async function addTag(req: Request, res: Response) {
 	}
 }
 
+export async function addTags(req: Request, res: Response) {
+	const {tags} = req.body;
+	const payload = Object.keys(tags).map((tagName) => {
+		return {
+			name: tagName,
+			state: "verified",
+			weightage: tags[tagName],
+			scope: "public",
+		} as ITag;
+	});
+	await saveTags(payload);
+	return res.status(200).json(tags);
+}
+
+// For downloading icons
 function generatePaths(parentDir: string, dirNames: Array<string>) {
 	const paths: Array<{ path: string, from: number, to: number }> = [];
 	let prevPath: { path: string, from: number, to: number };

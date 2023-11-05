@@ -1,3 +1,4 @@
+import {Document} from "mongoose";
 import { ObjectType } from "@armco/node-starter-kit/types/types";
 import ReactDOMServer from "react-dom/server.js";
 
@@ -44,6 +45,11 @@ export function getRenderableSvgAsString(icons: any, source: string, name: strin
   const iconFunc = iconSpace[name as keyof object];
   const renderableIcon = iconFunc(props);
   return ReactDOMServer.renderToString(renderableIcon);
+}
+
+export function toJson(iconMeta: Document) {
+  const jsonMeta = iconMeta.toJSON();
+  return trimObject(jsonMeta);
 }
 
 export function trimObject(obj: ObjectType, listToKeep?: Array<string> | null,
