@@ -1,6 +1,9 @@
 import { Router } from "express";
 import {addIcon, addTag, getIcon, getIcons, getAllIcons, getAllTags, getIconsPage, incorrectUrlFormathandler, populateToDb,
-	genMore, findAndAttemptGenMissing, genMoreByCount, genDirectories, getIconClusters, getIconJuice, addTags} from "../controllers/icon";
+	genMore, findAndAttemptGenMissing, genMoreByCount, genDirectories, getIconClusters, getIconJuice, addTags, svgToPng, pngResize,
+	findMissing,
+	pngToSvg,
+} from "../controllers/icon";
 
 const router = Router();
 
@@ -19,6 +22,10 @@ router.get("/dir-gen", genDirectories);
 router.post("/gen-by-count", genMoreByCount);
 router.post("/check", findAndAttemptGenMissing);
 router.get("/:source/:name/:color?/:size?/:className?", getIcon);
+router.get("/svg-to-png", svgToPng);
+router.post("/png-to-svg", pngToSvg);
+router.get("/png-resize", pngResize);
+router.get("/missing-in-dir", findMissing);
 
 
 // Careful with this one

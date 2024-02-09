@@ -1,15 +1,19 @@
 import fs from "fs";
+import path from "path";
 import axios from "axios";
 import { Request, Response } from "express";
 import { Document } from "mongoose";
 import ReactDOMServer from "react-dom/server.js";
-import { getRenderableSvgAsString, toJson, trimObject } from "../helpers";
+import { getFilesInSubdirectories, getRenderableSvgAsString, toJson, trimObject } from "../helpers";
 import Helper from "../helper";
 import * as icons from "../icons/all";
 import { IIcon, IIconMeta, IMeta, IconResponse } from "../models/Icon";
 import { ITag } from "../models/Tag";
 import { getAllIconsMeta, getIconsBy, getPageIconsMeta, saveIcon, saveIconMeta, saveIcons, saveIconsMeta, saveTag, saveTags } from "../dao/icon";
 import { ArrayType, ObjectType } from "@armco/node-starter-kit/types/types";
+import SvgToPngConverter from "../converters/SvgToPng";
+import PngResize from "../converters/PngResize";
+import PngToSvgConverter from "../converters/PngToSvg";
 
 // Set a custom timeout value (e.g., 5 seconds)
 const CUSTOM_TIMEOUT = 10000; // 7 seconds in milliseconds
@@ -517,6 +521,22 @@ function genMissing(missing: Array<number>, directories: Array<string | number>)
 	fetchAndSave(urls);
 }
 
+export function findMissing(req: Request, res: Response) {
+	const {from, to, dir} = req.query;
+	if (from && to) {
+		let files = fs.readdirSync(`/Users/mohit/__Projects__/__ML__/Reverse-Image-Search-ML-DL-Project/images/${dir}`);
+		files = files.filter((file) => !file.startsWith("."));
+		const missing = [];
+		for (let i = +from; i <= +to; i++) {
+			if (DISCARDED.indexOf(i) === -1 && files.indexOf(i + ".png") === -1) {
+				missing.push(i + ".png");
+			}
+		}
+		return res.status(200).json({missing});
+	}
+	return res.status(400);
+}
+
 export function findAndAttemptGenMissing(req: Request, res: Response) {
 	const checkTill = req.body.till;
 	const checkFrom = req.body.from;
@@ -636,6 +656,51 @@ export async function genMoreByCount(req: Request, res: Response) {
 	const { from, to, src } = req.body;
 	await genBulk(from, to, src);
 	return res.json({ success: true, from, to });
+}
+
+export async function svgToPng(req: Request, res: Response) {
+	const iconResponse = await axios.get("http://localhost:5001/api/icon/all");
+	const icons = iconResponse.data;
+	icons.forEach((icon: IconResponse) => SvgToPngConverter.convert(icon, "black"));
+	return res.status(200);
+}
+
+export async function pngToSvg(req: Request, res: Response) {
+	const {urls} = req.body;
+	const {color} = req.query;
+	if (urls) {
+		const icons = [];
+		for (let i = 0; i < urls.length; i++) {
+			try {
+			const iconResponse = await axios.get(urls[i], {responseType: "arraybuffer"});
+			icons.push(iconResponse.data);
+			} catch (e) {
+				logger.error("Unable to fetch:", urls[i]);
+			}
+		}
+		const svgs = await PngToSvgConverter.convert(icons, {color: color || "black"});
+		return res.status(200).send(svgs);
+	}
+	return res.status(200);
+}
+
+export async function pngResize(req: Request, res: Response) {
+	try {
+		const {from, to, dir} = req.query;
+		if (from && to) {
+			const input = "/Users/mohit/__Projects__/icons/tnp";
+			const subDirectories = fs.readdirSync(input)
+				.filter((dir) => fs.statSync(path.join(input, dir)).isDirectory())
+				.map((dir) => path.join(input, dir));
+			const files = getFilesInSubdirectories(subDirectories.slice(+from, +to));
+			files.forEach((filePath) => PngResize.resize(filePath, `/Users/mohit/__Projects__/__ML__/images/${dir ? dir : ""}`));
+			return res.status(200).json({success: true});
+		} else {
+			return res.status(400).json({message: "Please share from and to"});
+		}
+	} catch (e) {
+		return res.status(500);
+	}
 }
 
 function delay(time?: number) {

@@ -1,4 +1,5 @@
 import { ObjectType } from "@armco/node-starter-kit/types/types";
+import FONTS_CONFIG from "./fonts/google-fonts";
 
 interface Formats {svg?: string, woff?: string, woff2?: string, ttf?: string, eot?: string}
 class Helper {
@@ -30,6 +31,28 @@ class Helper {
             return version < 40 ? "woff" : "woff2";
         }
         return "ttf";
+    }
+
+    static processFontRequest(params: ObjectType, name: string, isLocalHost: boolean, userAgent?: string) {
+        const format = Helper.getFontTypeFromAgent(userAgent as string);
+        params.format = format;
+        const configName = name.replace(/\+/g, " ");
+        /* eslint-ignore @typescript-eslint/no-explicit-any */
+        const fontConfig: any = FONTS_CONFIG[configName as keyof object];
+        const listenPort = (global as any).ARMCOSTATIC.appConfig?.app?.port || process.env.APP_PORT || 8081;
+        const host = isLocalHost ? `http://localhost:${listenPort}/api` : "https://static.armco.tech";
+        params.host = host;
+        if (!fontConfig) {
+            return null;
+        }
+        if (format === "woff2") {
+            return fontConfig.subsets && fontConfig.subsets.reduce((acc: string, subset: string) => {
+                params.subset = subset;
+                return acc + Helper.generateFont(name, fontConfig, params);
+            }, "");
+        } else {
+            return Helper.generateFont(name, fontConfig, params);
+        }
     }
 
     static generateFont(name: string, config: ObjectType, params: ObjectType) {
