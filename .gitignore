@@ -118,5 +118,6 @@ src/fonts/all/**/*
 *.pem
 
 src/icons/downloaded/*
+src/icons/pngs/*
 
 armcorc.json

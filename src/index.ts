@@ -14,7 +14,11 @@ function injectRouteMW(app: Express) {
     res.json({success: true, message: "Hello from Armory's Static Content Server"});
   });
   app.use("/api", BaseRouter);
-  app.use("/static", express.static(__dirname + "/icons/downloaded/tnp"));
+  // app.use("/static", express.static(__dirname + "/icons/pngs"));
+  const staticRouter = express.Router();
+  staticRouter.use(express.static(__dirname + "/../../__ML__/images"));
+  staticRouter.use(express.static(__dirname + "/icons/pngs"));
+  app.use("/api/static", staticRouter);
   logger.info("Routes registered successfully!");
 }
 

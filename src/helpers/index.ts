@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import {Document} from "mongoose";
 import { ObjectType } from "@armco/node-starter-kit/types/types";
 import ReactDOMServer from "react-dom/server.js";
@@ -84,4 +86,34 @@ export function trimObject(obj: ObjectType, listToKeep?: Array<string> | null,
     }
   });
   return returnObj;
+}
+
+function populateFilePaths(directory: string) {
+  const subdirectories = fs.readdirSync(directory)
+    .filter((dir) => fs.statSync(path.join(directory, dir)).isDirectory())
+    .map((dir) => path.join(directory, dir));
+
+  const filesInParentDirectory = fs.readdirSync(directory)
+    .filter((file) => fs.statSync(path.join(directory, file)).isFile())
+    .map((file) => path.join(directory, file));
+
+  const filesInSubdirectories: string[] = [];
+
+  for (const subdir of subdirectories) {
+    const files = fs.readdirSync(subdir)
+      .filter((file) => fs.statSync(path.join(subdir, file)).isFile())
+      .map((file) => path.join(subdir, file));
+
+    filesInSubdirectories.push(...files);
+  }
+  return filesInSubdirectories.concat(filesInParentDirectory);
+}
+
+export function getFilesInSubdirectories(directory: string | Array<string>): Array<string> {
+const result: Array<string> = [];
+  if (Array.isArray(directory)) {
+    return directory.reduce((acc, dir) => acc.concat(populateFilePaths(dir)), result);
+  } else {
+    return populateFilePaths(directory);
+  }
 }
