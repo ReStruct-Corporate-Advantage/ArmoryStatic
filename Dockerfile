@@ -21,7 +21,7 @@ COPY privkey.pem /etc/ssl/certificates/privkey.pem
 ENV NODE_ENV production
 
 # our app is running on port 3000 within the container, so need to expose it
-EXPOSE 5000
+EXPOSE 8081
 
 # the command that starts our app
 CMD ["npm", "start"]
