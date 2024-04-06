@@ -76,6 +76,7 @@ class Helper {
         fontBuilder += `\tfont-style: ${style};\n`;
         fontBuilder += `\tfont-weight: ${weight};\n`;
         fontBuilder += `\tsrc: url(${url})${formatAttribute ? formatAttribute : ""};\n`;
+        fontBuilder += "\tfont-display: swap;\n";
         unicodeRange && (fontBuilder += `\tunicode-range: ${unicodeRange};\n`);
         fontBuilder += "}\n";
         return fontBuilder;
