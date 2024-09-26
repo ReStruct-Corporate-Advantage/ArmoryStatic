@@ -1,6 +1,7 @@
 import { ObjectType } from "@armco/node-starter-kit/types/types";
-import { IIcon, IIconMeta, Icon, IconMeta } from "../models/Icon";
-import { ITag, Tag } from "../models/Tag";
+import { Icon, IconMeta } from "../models/Icon";
+import { Tag } from "../models/Tag";
+import { IIcon, IIconMeta, ITag } from "../types/entity.interface";
 
 export async function saveIcons(icons: Array<IIcon>) {
 	return await Icon.insertMany(icons);

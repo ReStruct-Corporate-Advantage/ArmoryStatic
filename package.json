@@ -21,7 +21,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@armco/node-starter-kit": "^1.4.4",
+    "@armco/node-starter-kit": "^1.4.6",
     "@fontsource/open-sans": "^4.5.2",
     "@fontsource/roboto": "^4.5.1",
     "axios": "^1.4.0",
@@ -40,7 +40,6 @@
     "sharp": "^0.32.4"
   },
   "devDependencies": {
-    "@types/axios": "^0.14.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.14",
     "@types/multer": "^1.4.7",

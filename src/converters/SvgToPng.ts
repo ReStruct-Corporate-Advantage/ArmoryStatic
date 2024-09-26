@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import {IconResponse} from "../models/Icon";
+import { IconResponse } from "../types/entity.interface";
 
 class SvgToPngConverter {
   static async convert(icon: IconResponse, color: string) {
