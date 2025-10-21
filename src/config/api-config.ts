@@ -3,27 +3,27 @@ import { ApiConfig } from "../types/apiconfig.interface";
 const API_CONFIG: ApiConfig = {
   HOST: {
     development: "http://localhost:5000/api",
-    production: "https://api.armco.tech",
+    production: "https://api.armco.dev",
   },
   STATIC_HOST: {
     development: "http://localhost:5001/api",
-    production: "https://static.armco.tech",
+    production: "https://static.armco.dev",
   },
   TASKER: {
     development: "http://localhost:5002/api",
-    production: "https://tasks.armco.tech",
+    production: "https://tasks.armco.dev",
   },
   CONFIG: {
     development: "http://localhost:5003/api",
-    production: "https://config.armco.tech",
+    production: "https://config.armco.dev",
   },
   IAM: {
     development: "http://localhost:5004/api",
-    production: "https://iam.armco.tech",
+    production: "https://iam.armco.dev",
   },
   SEER: {
     development: "http://localhost:5005/api",
-    production: "https://telemetry.armco.tech",
+    production: "https://telemetry.armco.dev",
   },
 };
 

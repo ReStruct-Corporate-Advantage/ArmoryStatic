@@ -40,7 +40,7 @@ class Helper {
         /* eslint-ignore @typescript-eslint/no-explicit-any */
         const fontConfig: any = FONTS_CONFIG[configName as keyof object];
         const listenPort = (global as any).ARMCOSTATIC.appConfig?.app?.port || process.env.APP_PORT || 8081;
-        const host = isLocalHost ? `http://localhost:${listenPort}/api` : "https://static.armco.tech";
+        const host = isLocalHost ? `http://localhost:${listenPort}/api` : "https://static.armco.dev";
         params.host = host;
         if (!fontConfig) {
             return null;

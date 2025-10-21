@@ -2,7 +2,7 @@
   "name": "@armco/armcostatic",
   "version": "1.0.0",
   "description": "Server for static content across Armco",
-  "author": "mohit.nagar@armco.tech",
+  "author": "mohit.nagar@armco.dev",
   "license": "ISC",
   "scripts": {
     "lint": "eslint --ext .ts .",
